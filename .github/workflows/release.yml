@@ -17,10 +17,21 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '21.0.12.1'
           cache: maven
       - name: Validate and build
-        run: mvn -s .mvn/settings.xml --batch-mode --no-transfer-progress -Dgpg.skip=true clean verify
+        run: mvn -s .mvn/settings.xml --batch-mode --no-transfer-progress clean verify
+      - name: Reject known JAR vulnerabilities
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          version: v0.75.0
+          scan-type: sbom
+          scan-ref: target/bom.json
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+          format: json
+          output: target/vulnerability-report.json
       - name: Checksum
         working-directory: target
         run: sha256sum keycloak-russian-providers.jar > keycloak-russian-providers.jar.sha256
@@ -30,6 +41,8 @@ jobs:
           path: |
             target/keycloak-russian-providers.jar
             target/keycloak-russian-providers.jar.sha256
+            target/vulnerability-report.json
+            target/bom.json
 
   release:
     needs: build
@@ -49,5 +62,5 @@ jobs:
         run: |
           sha256sum --check keycloak-russian-providers.jar.sha256
           gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" \
-            --notes 'Built for Keycloak 26.7.1. Imports and refreshes Yandex avatars; removes OAuth configuration logging.' \
-            keycloak-russian-providers.jar keycloak-russian-providers.jar.sha256
+            --notes 'Keycloak 26.8.x only; Java 21.0.12.1. Imports and refreshes Yandex avatars. Bundled dependencies pass the Trivy vulnerability gate. Includes the exact runtime-library SBOM.' \
+            keycloak-russian-providers.jar keycloak-russian-providers.jar.sha256 vulnerability-report.json bom.json

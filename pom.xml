@@ -1,22 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
-
     <groupId>ru.playa.keycloak</groupId>
     <artifactId>keycloak-russian-providers</artifactId>
-    <version>26.7.1-qatools.1</version>
+    <version>26.8.0.1</version>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-
     <name>Keycloak identity providers for Russian Social Networks</name>
     <description>Yandex.Ru, Vk.Com, Mail.Ru and Ok.ru identity providers for Keycloak</description>
     <url>https://github.com/a-ryoo/keycloak-russian-providers</url>
-
     <developers>
         <developer>
             <name>Anatoliy Pokhresniy</name>
@@ -31,7 +22,6 @@
             <organizationUrl>https://playa.ru</organizationUrl>
         </developer>
     </developers>
-
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -39,33 +29,22 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <maven.compiler.release>17</maven.compiler.release>
-
-        <version.javadoc.plugin>2.10.1</version.javadoc.plugin>
+        <maven.compiler.release>21</maven.compiler.release>
         <version.compiler.plugin>3.11.0</version.compiler.plugin>
-        <version.deploy.plugin>2.8.2</version.deploy.plugin>
-        <version.source.plugin>2.4</version.source.plugin>
-        <version.release.plugin>2.5.3</version.release.plugin>
-        <version.assembly.plugin>3.1.0</version.assembly.plugin>
         <version.pmd.plugin>3.21.2</version.pmd.plugin>
         <version.checkstyle.plugin>3.0.0</version.checkstyle.plugin>
-        <version.surefire.plugin>2.22.0</version.surefire.plugin>
-
-        <version.keycloak>26.7.1</version.keycloak>
+        <version.surefire.plugin>3.6.0</version.surefire.plugin>
+        <version.keycloak>26.8.0</version.keycloak>
         <project.build.outputTimestamp>2026-10-13T00:00:00Z</project.build.outputTimestamp>
     </properties>
-
     <scm>
         <url>https://github.com/a-ryoo/keycloak-russian-providers</url>
         <developerConnection>scm:git:git@github.com:a-ryoo/keycloak-russian-providers.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -76,41 +55,48 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.14.2</version>
+            <version>5.24.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>2.10.0</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
             <version>2.6.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.20</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-services</artifactId>
             <version>${version.keycloak}</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi</artifactId>
             <version>${version.keycloak}</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi-private</artifactId>
             <version>${version.keycloak}</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-model-infinispan</artifactId>
@@ -118,10 +104,54 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.jayway.jsonpath</pattern>
+                                    <shadedPattern>ru.playa.keycloak.shaded.jsonpath</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.minidev</pattern>
+                                    <shadedPattern>ru.playa.keycloak.shaded.minidev</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.objectweb.asm</pattern>
+                                    <shadedPattern>ru.playa.keycloak.shaded.asm</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/**/module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -132,15 +162,13 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${version.compiler.plugin}</version>
             </plugin>
-
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>${version.surefire.plugin}</version>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -149,17 +177,14 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${version.checkstyle.plugin}</version>
-
                 <configuration>
                     <consoleOutput>true</consoleOutput>
                     <configLocation>checkstyle.xml</configLocation>
                 </configuration>
-
                 <executions>
                     <execution>
                         <goals>
@@ -169,12 +194,10 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>${version.pmd.plugin}</version>
-
                 <configuration>
                     <sourceEncoding>utf-8</sourceEncoding>
                     <minimumTokens>100</minimumTokens>
@@ -187,7 +210,6 @@
                     </excludeRoots>
                     <analysisCache>true</analysisCache>
                 </configuration>
-
                 <executions>
                     <execution>
                         <id>pmd-check</id>
@@ -211,116 +233,25 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.9.0</version>
-                <extensions>true</extensions>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.9.3</version>
                 <configuration>
-                    <publishingServerId>ossrh</publishingServerId>
+                    <includeProvidedScope>false</includeProvidedScope>
+                    <includeTestScope>false</includeTestScope>
+                    <includeSystemScope>false</includeSystemScope>
+                    <outputFormat>json</outputFormat>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.3</version>
                 <executions>
                     <execution>
-                        <id>sign-artifacts</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>sign</goal>
+                            <goal>makeBom</goal>
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${version.deploy.plugin}</version>
-            </plugin-->
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
-
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${version.source.plugin}</version>
-                <executions>
-                    <execution>
-                        <id>attach-source</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <tagNameFormat>v@{project.version}</tagNameFormat>
-                </configuration>
             </plugin>
         </plugins>
-
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <profiles>
-        <profile>
-            <id>docker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
-                        <version>1.4.13</version>
-                        <configuration>
-                            <repository>playaru/${project.artifactId}</repository>
-                            <tag>${version.keycloak}</tag>
-                            <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
-                            <buildArgs>
-                                <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-                                <PLAYA_RU_GITHUB_TOKEN>${token.github}</PLAYA_RU_GITHUB_TOKEN>
-                            </buildArgs>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>default</id>
-                                <goals>
-                                    <goal>build</goal>
-                                </goals>
-                                <phase>package</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>
