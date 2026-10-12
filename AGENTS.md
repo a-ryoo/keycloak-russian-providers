@@ -14,3 +14,4 @@
 
 - Only Keycloak 26.8.x/Java 21 is supported. Legacy WildFly descriptors, Angular theme assets, old compatibility docs and Sonatype/Spotify publication paths were removed.
 - Runtime CycloneDX SBOM excludes provided/test dependencies; scan the SBOM to retain identity/version coverage for relocated libraries. Scan the official server image separately.
+- setup-java rejects four-component Java versions: download the pinned official JDK archive, verify SHA-256, use distribution=jdkfile/java-version=21 and assert java -version is 21.0.12.1.
