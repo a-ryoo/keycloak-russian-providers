@@ -24,7 +24,6 @@ public abstract class AbstractRussianOAuth2IdentityProvider<C extends OAuth2Iden
     public AbstractRussianOAuth2IdentityProvider(final KeycloakSession session, final C config) {
         super(session, config);
 
-        logger.infof("Config %s", config.getConfig());
     }
 
     @Override

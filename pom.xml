@@ -9,13 +9,13 @@
 
     <groupId>ru.playa.keycloak</groupId>
     <artifactId>keycloak-russian-providers</artifactId>
-    <version>1.0.50-SNAPSHOT</version>
+    <version>26.7.1-qatools.1</version>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
 
     <name>Keycloak identity providers for Russian Social Networks</name>
     <description>Yandex.Ru, Vk.Com, Mail.Ru and Ok.ru identity providers for Keycloak</description>
-    <url>https://github.com/playa-ru/keycloak-russian-providers</url>
+    <url>https://github.com/a-ryoo/keycloak-russian-providers</url>
 
     <developers>
         <developer>
@@ -52,20 +52,33 @@
         <version.source.plugin>2.4</version.source.plugin>
         <version.release.plugin>2.5.3</version.release.plugin>
         <version.assembly.plugin>3.1.0</version.assembly.plugin>
-        <version.pmd.plugin>3.9.0</version.pmd.plugin>
+        <version.pmd.plugin>3.21.2</version.pmd.plugin>
         <version.checkstyle.plugin>3.0.0</version.checkstyle.plugin>
         <version.surefire.plugin>2.22.0</version.surefire.plugin>
 
-        <version.keycloak>26.6.2</version.keycloak>
+        <version.keycloak>26.7.1</version.keycloak>
+        <project.build.outputTimestamp>2026-10-13T00:00:00Z</project.build.outputTimestamp>
     </properties>
 
     <scm>
-        <url>scm:git:git@github.com:playa-ru/keycloak-russian-providers.git</url>
-        <developerConnection>scm:git:git@github.com:playa-ru/keycloak-russian-providers.git</developerConnection>
+        <url>https://github.com/a-ryoo/keycloak-russian-providers</url>
+        <developerConnection>scm:git:git@github.com:a-ryoo/keycloak-russian-providers.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.14.2</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
@@ -109,6 +122,11 @@
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -160,7 +178,7 @@
                 <configuration>
                     <sourceEncoding>utf-8</sourceEncoding>
                     <minimumTokens>100</minimumTokens>
-                    <targetJdk>1.8</targetJdk>
+                    <targetJdk>17</targetJdk>
                     <rulesets>
                         <ruleset>pmd.xml</ruleset>
                     </rulesets>
@@ -282,7 +300,7 @@
                         <artifactId>dockerfile-maven-plugin</artifactId>
                         <version>1.4.13</version>
                         <configuration>
-                            <repository>playaru/${artifactId}</repository>
+                            <repository>playaru/${project.artifactId}</repository>
                             <tag>${version.keycloak}</tag>
                             <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
                             <buildArgs>

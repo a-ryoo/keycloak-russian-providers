@@ -11,6 +11,8 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.http.simple.SimpleHttp;
 import org.keycloak.http.simple.SimpleHttpRequest;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import ru.playa.keycloak.modules.AbstractRussianOAuth2IdentityProvider;
 import ru.playa.keycloak.modules.RussianException;
 import ru.playa.keycloak.modules.Utils;
@@ -100,6 +102,11 @@ public class YandexIdentityProvider
         user.setLastName(getJsonProperty(node, "last_name"));
         user.setFirstName(getJsonProperty(node, "first_name"));
 
+        String avatarId = getJsonProperty(node, "default_avatar_id");
+        if (avatarId != null && avatarId.matches("[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*")) {
+            user.setUserAttribute("picture", "https://avatars.yandex.net/get-yapic/" + avatarId + "/islands-200");
+        }
+
         user.setIdp(this);
 
         AbstractJsonUserAttributeMapper.storeUserProfileForMapper(user, node, getConfig().getAlias());
@@ -131,6 +138,20 @@ public class YandexIdentityProvider
         return builder;
     }
 
+
+    @Override
+    public void updateBrokeredUser(
+        final KeycloakSession session, final RealmModel realm,
+        final UserModel user, final BrokeredIdentityContext context
+    ) {
+        super.updateBrokeredUser(session, realm, user, context);
+        String picture = context.getUserAttribute("picture");
+        if (picture == null) {
+            user.removeAttribute("picture");
+        } else {
+            user.setSingleAttribute("picture", picture);
+        }
+    }
 
     @Override
     protected String getDefaultScopes() {

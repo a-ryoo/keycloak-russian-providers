@@ -2,6 +2,28 @@
 
 ***Please find english version [here](readme_en.md).***
 
+## QATools fork
+
+Ветка `a-ryoo/master` содержит исправление переноса аватара Яндекс ID в стандартный
+атрибут `picture`, включая обновление существующей учётной записи при повторном
+входе. Значение принимается только как безопасный путь на `avatars.yandex.net`.
+Вывод OAuth-конфигурации с client secret в лог удалён.
+
+Целевая версия Keycloak — `26.7.1`. Сборка и проверки:
+
+```bash
+mvn -s .mvn/settings.xml --batch-mode --no-transfer-progress -Dgpg.skip=true clean verify
+```
+
+Теги `v<version>` публикуют JAR и его SHA-256 в
+[GitHub Releases](https://github.com/a-ryoo/keycloak-russian-providers/releases).
+Используйте URL конкретного выпуска и проверяйте checksum перед установкой.
+Для показа аватара объявите атрибут `picture` в Keycloak User profile;
+стандартный OIDC scope `profile` содержит нужный mapper. Разрешите чтение
+пользователю и ограничьте URI адресами Yandex avatars.
+
+Ниже сохранена документация upstream.
+
 Библиотека провайдеров российских социальных сетей для [Keycloak](https://www.keycloak.org/)
 + [ВКонтакте](docs/vk.md)
 + [Однокласники](docs/ok.md)
