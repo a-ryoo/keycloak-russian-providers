@@ -15,3 +15,5 @@
 - Only Keycloak 26.8.x/Java 21 is supported. Legacy WildFly descriptors, Angular theme assets, old compatibility docs and Sonatype/Spotify publication paths were removed.
 - Runtime CycloneDX SBOM excludes provided/test dependencies; scan the SBOM to retain identity/version coverage for relocated libraries. Scan the official server image separately.
 - setup-java rejects four-component Java versions: download the pinned official JDK archive, verify SHA-256, use distribution=jdkfile/java-version=21 and assert java -version is 21.0.12.1.
+- Owner explicitly requested a Java email-only auto-link authenticator, email=username, and Yandex profile overwrite at login. Register yandex-email-auto-link through AuthenticatorFactory SPI; reject username-only matches, untrusted/edited emails, disabled users and another existing Yandex identity. Keep existing IDs/groups/roles.
+- Yandex FORCE mode refreshes username/email, names, picture, birthdate, gender and phone_number. Missing optional attributes clear old values; no profile review before auto-link, because users must not edit the trusted upstream email.

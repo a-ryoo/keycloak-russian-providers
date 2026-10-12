@@ -91,16 +91,13 @@ public class YandexIdentityProvider
             Utils.isHostedDomain(email, getConfig().getHostedDomain(), YandexIdentityProviderFactory.PROVIDER_ID);
         }
 
-        String login = getJsonProperty(node, "login");
-        if (Utils.isNullOrEmpty(login)) {
-            user.setUsername(email);
-        } else {
-            user.setUsername(login);
-        }
-
+        user.setUsername(email);
         user.setEmail(email);
         user.setLastName(getJsonProperty(node, "last_name"));
         user.setFirstName(getJsonProperty(node, "first_name"));
+        setProfileAttribute(user, "birthdate", getJsonProperty(node, "birthday"));
+        setProfileAttribute(user, "gender", getJsonProperty(node, "sex"));
+        setProfileAttribute(user, "phone_number", getJsonProperty(node.path("default_phone"), "number"));
 
         String avatarId = getJsonProperty(node, "default_avatar_id");
         if (avatarId != null && avatarId.matches("[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*")) {
@@ -145,6 +142,23 @@ public class YandexIdentityProvider
         final UserModel user, final BrokeredIdentityContext context
     ) {
         super.updateBrokeredUser(session, realm, user, context);
+        if (getConfig().getSyncMode() == org.keycloak.models.IdentityProviderSyncMode.FORCE) {
+            user.setEmail(context.getEmail());
+            user.setUsername(context.getEmail());
+            user.setFirstName(context.getFirstName());
+            user.setLastName(context.getLastName());
+            if (Boolean.TRUE.equals(getConfig().isTrustEmail())) {
+                user.setEmailVerified(true);
+            }
+            for (String attribute : new String[] {"birthdate", "gender", "phone_number"}) {
+                String value = context.getUserAttribute(attribute);
+                if (value == null || value.isBlank()) {
+                    user.removeAttribute(attribute);
+                } else {
+                    user.setSingleAttribute(attribute, value);
+                }
+            }
+        }
         String picture = context.getUserAttribute("picture");
         if (picture == null) {
             user.removeAttribute("picture");
@@ -156,5 +170,17 @@ public class YandexIdentityProvider
     @Override
     protected String getDefaultScopes() {
         return DEFAULT_SCOPE;
+    }
+
+    /**
+     * Adds a present optional profile value to the broker context.
+     * @param context broker identity
+     * @param name attribute name
+     * @param value upstream value, possibly absent
+     */
+    private void setProfileAttribute(final BrokeredIdentityContext context, final String name, final String value) {
+        if (value != null && !value.isBlank()) {
+            context.setUserAttribute(name, value);
+        }
     }
 }

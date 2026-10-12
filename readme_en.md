@@ -5,6 +5,9 @@
 This fork supports **Keycloak 26.8.x and Java 21 only**. The current release is
 built against Keycloak 26.8.0 using JDK 21.0.12.1. It imports and refreshes Yandex
 avatars and removes OAuth configuration logging.
+Yandex uses email as username and refreshes the full profile in `FORCE` mode.
+The `yandex-email-auto-link` authenticator links pre-created accounts by trusted
+email without a local password or email message; username-only matches are rejected.
 
 ```bash
 mvn -s .mvn/settings.xml --batch-mode --no-transfer-progress clean verify

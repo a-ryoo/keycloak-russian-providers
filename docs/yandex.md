@@ -1,5 +1,21 @@
 # Яндекс
 
+## Email identity and automatic account linking
+
+The Yandex email is the Keycloak username. Existing users retain their internal ID,
+groups and roles. With provider sync mode `FORCE`, each login refreshes email,
+username, first/last name, picture, birthdate, gender and phone_number; missing
+optional attributes clear stale values.
+
+To link pre-created accounts without an email message or local password, create a
+dedicated first broker login flow with `idp-create-user-if-unique` followed by
+`yandex-email-auto-link`, both `ALTERNATIVE`, and assign it only to Yandex.
+Enable `Trust Email`; disable duplicate emails. Do not add a profile-review step:
+the email authorizing a link must come directly from the trusted Yandex profile.
+The custom authenticator rejects username-only collisions, user-edited emails,
+disabled users and accounts linked to a different Yandex identity. Do not replace
+it with the generic `idp-auto-link` authenticator.
+
 **Создание приложения в [Яндекс](https://oauth.yandex.ru/client/new)**
 
 _Создаём приложение._

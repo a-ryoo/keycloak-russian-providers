@@ -70,5 +70,5 @@ jobs:
         run: |
           sha256sum --check keycloak-russian-providers.jar.sha256
           gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" \
-            --notes 'Keycloak 26.8.x only; Java 21.0.12.1. Imports and refreshes Yandex avatars. Bundled dependencies pass the Trivy vulnerability gate. Includes the exact runtime-library SBOM.' \
+            --notes 'Keycloak 26.8.x only; Java 21.0.12.1. Adds trusted Yandex account linking by exact email, uses email as username, and synchronizes the Yandex profile in FORCE mode. Bundled dependencies pass the Trivy vulnerability gate. Includes the exact runtime-library SBOM.' \
             keycloak-russian-providers.jar keycloak-russian-providers.jar.sha256 vulnerability-report.json bom.json

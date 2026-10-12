@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.IdentityProviderSyncMode;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
@@ -29,11 +30,14 @@ public class YandexIdentityProviderTest {
     /** Valid Yandex profile fixture. */
     private ObjectNode profile;
 
+    /** Provider configuration. */
+    private YandexIdentityProviderConfig config;
+
     /** Initializes a valid profile without a portrait. */
     @Before
     public void setUp() {
         session = mock(KeycloakSession.class);
-        YandexIdentityProviderConfig config = new YandexIdentityProviderConfig();
+        config = new YandexIdentityProviderConfig();
         config.setAlias("yandex");
         config.setEnabled(true);
         provider = new YandexIdentityProvider(session, config);
@@ -53,7 +57,7 @@ public class YandexIdentityProviderTest {
         assertEquals("https://avatars.yandex.net/get-yapic/12345/fixture-avatar_1/islands-200",
             identity.getUserAttribute("picture"));
         assertEquals("fixture-id", identity.getId());
-        assertEquals("fixture-login", identity.getUsername());
+        assertEquals("fixture@example.org", identity.getUsername());
         assertEquals("fixture@example.org", identity.getEmail());
         assertEquals("First", identity.getFirstName());
         assertEquals("Last", identity.getLastName());
@@ -94,5 +98,46 @@ public class YandexIdentityProviderTest {
             verify(user).removeAttribute("picture");
             verifyNoMoreInteractions(user);
         }
+    }
+
+    /** Uses email as username and overwrites optional profile values in FORCE mode. */
+    @Test
+    public void synchronizesCompleteProfile() {
+        config.setSyncMode(IdentityProviderSyncMode.FORCE);
+        config.setTrustEmail(true);
+        profile.put("birthday", "1990-01-02");
+        profile.put("sex", "male");
+        profile.putObject("default_phone").put("number", "+70000000000");
+        UserModel user = mock(UserModel.class);
+        provider.updateBrokeredUser(session, mock(RealmModel.class), user,
+            provider.extractIdentityFromProfile(null, profile));
+        verify(user).setEmail("fixture@example.org");
+        verify(user).setUsername("fixture@example.org");
+        verify(user).setFirstName("First");
+        verify(user).setLastName("Last");
+        verify(user).setEmailVerified(true);
+        verify(user).setSingleAttribute("birthdate", "1990-01-02");
+        verify(user).setSingleAttribute("gender", "male");
+        verify(user).setSingleAttribute("phone_number", "+70000000000");
+        verify(user).removeAttribute("picture");
+        verifyNoMoreInteractions(user);
+    }
+
+    /** Clears stale optional profile fields when Yandex no longer supplies them. */
+    @Test
+    public void clearsMissingOptionalProfile() {
+        config.setSyncMode(IdentityProviderSyncMode.FORCE);
+        UserModel user = mock(UserModel.class);
+        provider.updateBrokeredUser(session, mock(RealmModel.class), user,
+            provider.extractIdentityFromProfile(null, profile));
+        verify(user).setEmail("fixture@example.org");
+        verify(user).setUsername("fixture@example.org");
+        verify(user).setFirstName("First");
+        verify(user).setLastName("Last");
+        verify(user).removeAttribute("birthdate");
+        verify(user).removeAttribute("gender");
+        verify(user).removeAttribute("phone_number");
+        verify(user).removeAttribute("picture");
+        verifyNoMoreInteractions(user);
     }
 }
